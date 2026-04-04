@@ -4,7 +4,7 @@ import { verifyToken } from "@/lib/auth";
 const PUBLIC_ROUTES = ["/login", "/register"];
 const AUTH_ROUTES = ["/feed"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const token = request.cookies.get("bs_token")?.value;
