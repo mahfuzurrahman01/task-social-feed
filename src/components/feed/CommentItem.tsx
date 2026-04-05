@@ -148,6 +148,7 @@ export default function CommentItem({ comment: initial }: Props) {
                     <span>Reply.</span>
                   </button>
                 </li>
+                <li><span>Share</span></li>
                 <li><span className="_time_link">.{timeAgo(comment.createdAt)}</span></li>
               </ul>
             </div>

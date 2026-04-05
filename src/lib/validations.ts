@@ -34,7 +34,7 @@ export const createPostSchema = z.object({
     .max(5000, "Post content too long")
     .trim(),
   visibility: z.enum(["PUBLIC", "PRIVATE"]).default("PUBLIC"),
-  imageUrl: z.string().url().optional().nullable(),
+  imageUrl: z.string().min(1).optional().nullable(),
 });
 
 export const createCommentSchema = z.object({

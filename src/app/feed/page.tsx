@@ -54,7 +54,8 @@ export default function FeedPage() {
         <Navbar />
 
         <div className="container _custom_container">
-          <div className="row _layout_row">
+          <div className="_layout_inner_wrap">
+          <div className="row">
             {/* Left Sidebar */}
             <div className="col-xl-3 col-lg-3 col-md-12 col-sm-12">
               <LeftSidebar />
@@ -107,6 +108,7 @@ export default function FeedPage() {
             <div className="col-xl-3 col-lg-3 col-md-12 col-sm-12">
               <RightSidebar />
             </div>
+          </div>
           </div>
         </div>
       </div>

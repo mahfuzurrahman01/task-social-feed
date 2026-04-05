@@ -3,13 +3,23 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signToken, AUTH_COOKIE } from "@/lib/auth";
 import { registerSchema } from "@/lib/validations";
+import { checkRateLimit } from "@/lib/rate-limit";
 import {
   successResponse,
   errorResponse,
   validationErrorResponse,
 } from "@/lib/api-response";
 
+// 5 registrations per hour per IP
+const REGISTER_LIMIT = 5;
+const REGISTER_WINDOW_MS = 60 * 60 * 1000;
+
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!checkRateLimit(`register:${ip}`, REGISTER_LIMIT, REGISTER_WINDOW_MS)) {
+    return errorResponse("Too many registration attempts. Please try again later.", 429);
+  }
+
   try {
     const body = await request.json();
 

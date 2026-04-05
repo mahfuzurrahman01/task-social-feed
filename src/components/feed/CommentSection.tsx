@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { Comment } from "@/types/feed";
 import { useAuth } from "@/contexts/AuthContext";
 import CommentItem from "./CommentItem";
@@ -19,6 +19,13 @@ export default function CommentSection({ postId, initialComments, initialCount }
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(initialComments.length > 0);
+
+  useEffect(() => {
+    if (initialCount > 0 && !loaded) {
+      loadComments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadComments() {
     setLoading(true);

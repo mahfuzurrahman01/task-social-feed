@@ -16,7 +16,7 @@ export default function PostCard({ post: initial, onDeleted }: Props) {
   const { user } = useAuth();
   const [post, setPost] = useState(initial);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const [showWhoLiked, setShowWhoLiked] = useState(false);
   const [deleting, setDeleting] = useState(false);
 

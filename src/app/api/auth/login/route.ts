@@ -3,13 +3,23 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signToken, AUTH_COOKIE } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
+import { checkRateLimit } from "@/lib/rate-limit";
 import {
   successResponse,
   errorResponse,
   validationErrorResponse,
 } from "@/lib/api-response";
 
+// 10 attempts per 15 minutes per IP
+const LOGIN_LIMIT = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!checkRateLimit(`login:${ip}`, LOGIN_LIMIT, LOGIN_WINDOW_MS)) {
+    return errorResponse("Too many login attempts. Please try again later.", 429);
+  }
+
   try {
     const body = await request.json();
 
