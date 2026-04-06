@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Post } from "@/types/feed";
 import Navbar from "@/components/layout/Navbar";
 import DarkModeToggle from "@/components/layout/DarkModeToggle";
@@ -16,9 +16,14 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [initialLoaded, setInitialLoaded] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(false);
+  const cursorRef = useRef<string | null>(null);
+  const hasMoreRef = useRef(true);
 
   const loadPosts = useCallback(async (cursorParam?: string) => {
-    if (loading) return;
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     const url = cursorParam ? `/api/posts?cursor=${cursorParam}` : "/api/posts";
     const res = await fetch(url);
@@ -26,17 +31,40 @@ export default function FeedPage() {
       const data = await res.json();
       const newPosts: Post[] = data.data.posts;
       setPosts((prev) => cursorParam ? [...prev, ...newPosts] : newPosts);
-      setCursor(data.data.nextCursor ?? null);
-      setHasMore(!!data.data.nextCursor);
+      const nextCursor = data.data.nextCursor ?? null;
+      cursorRef.current = nextCursor;
+      hasMoreRef.current = !!nextCursor;
+      setCursor(nextCursor);
+      setHasMore(!!nextCursor);
     }
+    loadingRef.current = false;
     setLoading(false);
     setInitialLoaded(true);
-  }, [loading]);
+  }, []);
 
+  // Initial load
   useEffect(() => {
     loadPosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // IntersectionObserver — fires when sentinel scrolls into view
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreRef.current && !loadingRef.current) {
+          loadPosts(cursorRef.current ?? undefined);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadPosts]);
 
   function handlePostCreated(post: Post) {
     setPosts((prev) => [post, ...prev]);
@@ -86,18 +114,16 @@ export default function FeedPage() {
                     <PostCard key={post.id} post={post} onDeleted={handlePostDeleted} />
                   ))}
 
-                  {/* Load more */}
-                  {hasMore && initialLoaded && (
-                    <div style={{ textAlign: "center", paddingBottom: "24px" }}>
-                      <button
-                        type="button"
-                        className="_feed_inner_text_area_btn_link"
-                        onClick={() => loadPosts(cursor ?? undefined)}
-                        disabled={loading}
-                        style={{ padding: "10px 28px" }}
-                      >
-                        {loading ? "Loading..." : "Load more"}
-                      </button>
+                  {/* Infinite scroll sentinel */}
+                  <div ref={sentinelRef} />
+                  {loading && initialLoaded && (
+                    <div style={{ textAlign: "center", padding: "16px", color: "#888" }}>
+                      Loading...
+                    </div>
+                  )}
+                  {!hasMore && initialLoaded && posts.length > 0 && (
+                    <div style={{ textAlign: "center", padding: "16px", color: "#aaa", fontSize: "13px" }}>
+                      You&apos;re all caught up!
                     </div>
                   )}
                 </div>
