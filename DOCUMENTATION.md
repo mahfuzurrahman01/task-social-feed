@@ -4,8 +4,9 @@
 
 BuddyScript is a full-stack social media feed application built with **Next.js 15 (App Router)**, **PostgreSQL**, and **Prisma ORM**. It converts the provided HTML/CSS templates (Login, Register, Feed) into a fully functional web application with authentication, real-time post interactions, and image uploads.
 
-The project is live at: **[https://buddyscript.vercel.app](https://buddyscript.vercel.app)**
-GitHub repository: **[https://github.com/YOUR_USERNAME/buddyscript](https://github.com/YOUR_USERNAME/buddyscript)**
+GitHub Repository: https://github.com/mahfuzurrahman01/task-social-feed
+
+Live URL: https://task-social-feed.vercel.app
 
 ---
 
@@ -187,7 +188,7 @@ prisma/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/buddyscript.git
+git clone https://github.com/mahfuzurrahman01/task-social-feed
 cd buddyscript
 
 # 2. Install dependencies
@@ -208,9 +209,7 @@ npm run dev
 ```
 
 **Demo accounts (after seeding):**
-- `john@example.com` / `Password123!`
-- `jane@example.com` / `Password123!`
-- `radovan@example.com` / `Password123!`
+- `mafuzur.rahman032@gmail.com` / `Mahfuz32##!`
 
 ---
 
