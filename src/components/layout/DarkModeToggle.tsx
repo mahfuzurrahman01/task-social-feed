@@ -8,7 +8,7 @@ export default function DarkModeToggle() {
   useEffect(() => {
     const stored = localStorage.getItem("bs_dark");
     if (stored === "true") {
-      document.body.classList.add("_dark_mode");
+      document.body.classList.add("_dark_wrapper");
       setDark(true);
     }
   }, []);
@@ -18,9 +18,9 @@ export default function DarkModeToggle() {
     setDark(next);
     localStorage.setItem("bs_dark", String(next));
     if (next) {
-      document.body.classList.add("_dark_mode");
+      document.body.classList.add("_dark_wrapper");
     } else {
-      document.body.classList.remove("_dark_mode");
+      document.body.classList.remove("_dark_wrapper");
     }
   }
 
