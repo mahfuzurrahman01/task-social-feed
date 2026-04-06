@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     where: {
       OR: [
         { visibility: "PUBLIC" },
-        { authorId: session.userId, visibility: "PRIVATE" },
+        { visibility: "PRIVATE", authorId: session.userId },
       ],
     },
     orderBy: { createdAt: "desc" },

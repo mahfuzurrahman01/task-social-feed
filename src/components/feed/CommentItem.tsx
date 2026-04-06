@@ -83,8 +83,10 @@ export default function CommentItem({ comment: initial }: Props) {
           />
         </a>
       </div>
+
       <div className="_comment_area">
-        <div className="_comment_details">
+        {/* _comment_details = grey bubble. Override max-width:fit-content so short comments still fill full width */}
+        <div className="_comment_details" style={{ maxWidth: "100%", width: "100%" }}>
           <div className="_comment_details_top">
             <div className="_comment_name">
               <a href="#">
@@ -122,6 +124,7 @@ export default function CommentItem({ comment: initial }: Props) {
               </button>
             </div>
           )}
+          {/* Like/Reply/Share row — absolutely positioned bottom:-37px by CSS, must stay inside _comment_details */}
           <div className="_comment_reply">
             <div className="_comment_reply_num">
               <ul className="_comment_reply_list">
@@ -153,50 +156,51 @@ export default function CommentItem({ comment: initial }: Props) {
               </ul>
             </div>
           </div>
-
-          {/* Reply input box */}
-          {showReplyBox && user && (
-            <div className="_feed_inner_comment_box" style={{ marginTop: "8px" }}>
-              <form className="_feed_inner_comment_box_form" onSubmit={submitReply}>
-                <div className="_feed_inner_comment_box_content">
-                  <div className="_feed_inner_comment_box_content_image">
-                    <img
-                      src={user.avatar ?? "/assets/images/comment_img.png"}
-                      alt=""
-                      className="_comment_img"
-                    />
-                  </div>
-                  <div className="_feed_inner_comment_box_content_txt">
-                    <textarea
-                      className="form-control _comment_textarea"
-                      placeholder="Write a reply..."
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          submitReply(e as unknown as FormEvent);
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="_feed_inner_comment_box_icon">
-                  <button
-                    type="submit"
-                    className="_feed_inner_comment_box_icon_btn"
-                    disabled={postingReply}
-                    style={{ opacity: postingReply ? 0.6 : 1 }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="13" fill="none" viewBox="0 0 14 13">
-                      <path fill="#666" fillRule="evenodd" d="M6.37 7.879l2.438 3.955a.335.335 0 00.34.162c.068-.01.23-.05.289-.247l3.049-10.297a.348.348 0 00-.09-.35.341.341 0 00-.34-.088L1.75 4.03a.34.34 0 00-.247.289.343.343 0 00.16.347L5.666 7.17 9.2 3.597a.5.5 0 01.712.703L6.37 7.88z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
         </div>
+
+        {/* Reply input box — outside the bubble, same as reference HTML */}
+        {showReplyBox && user && (
+          <div className="_feed_inner_comment_box">
+            <form className="_feed_inner_comment_box_form" onSubmit={submitReply}>
+              <div className="_feed_inner_comment_box_content">
+                <div className="_feed_inner_comment_box_content_image">
+                  <img
+                    src={user.avatar ?? "/assets/images/comment_img.png"}
+                    alt=""
+                    className="_comment_img"
+                  />
+                </div>
+                <div className="_feed_inner_comment_box_content_txt">
+                  <textarea
+                    className="form-control _comment_textarea"
+                    placeholder="Write a reply..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        submitReply(e as unknown as FormEvent);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="_feed_inner_comment_box_icon">
+                <button
+                  type="submit"
+                  className="_feed_inner_comment_box_icon_btn"
+                  disabled={postingReply}
+                  style={{ opacity: postingReply ? 0.6 : 1 }}
+                  title="Send reply"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="13" fill="none" viewBox="0 0 14 13">
+                    <path fill="#377DFF" fillRule="evenodd" d="M6.37 7.879l2.438 3.955a.335.335 0 00.34.162c.068-.01.23-.05.289-.247l3.049-10.297a.348.348 0 00-.09-.35.341.341 0 00-.34-.088L1.75 4.03a.34.34 0 00-.247.289.343.343 0 00.16.347L5.666 7.17 9.2 3.597a.5.5 0 01.712.703L6.37 7.88z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Replies */}
         {comment._count.replies > 0 && !showReplies && (

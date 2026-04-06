@@ -1,49 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { v2 as cloudinary } from "cloudinary";
 import { verifyRequestToken } from "@/lib/auth";
 import { unauthorizedResponse, errorResponse } from "@/lib/api-response";
 import { checkRateLimit } from "@/lib/rate-limit";
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
+
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
-// 20 uploads per hour per user
 const UPLOAD_LIMIT = 20;
 const UPLOAD_WINDOW_MS = 60 * 60 * 1000;
 
-/** Validate actual file bytes against known magic numbers to prevent MIME spoofing. */
 function validateMagicBytes(buffer: Buffer, mimeType: string): boolean {
   if (mimeType === "image/jpeg") {
     return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
   }
   if (mimeType === "image/png") {
-    return (
-      buffer[0] === 0x89 &&
-      buffer[1] === 0x50 &&
-      buffer[2] === 0x4e &&
-      buffer[3] === 0x47
-    );
+    return buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
   }
   if (mimeType === "image/gif") {
-    return (
-      buffer[0] === 0x47 &&
-      buffer[1] === 0x49 &&
-      buffer[2] === 0x46 &&
-      buffer[3] === 0x38
-    );
+    return buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38;
   }
   if (mimeType === "image/webp") {
-    // RIFF....WEBP
     return (
-      buffer[0] === 0x52 &&
-      buffer[1] === 0x49 &&
-      buffer[2] === 0x46 &&
-      buffer[3] === 0x46 &&
-      buffer[8] === 0x57 &&
-      buffer[9] === 0x45 &&
-      buffer[10] === 0x42 &&
-      buffer[11] === 0x50
+      buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+      buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
     );
   }
   return false;
@@ -74,21 +60,24 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Validate actual file bytes — prevent MIME type spoofing
     if (!validateMagicBytes(buffer, file.type)) {
       return errorResponse("File content does not match the declared image type");
     }
 
-    // Sanitize filename — strip path traversal chars, keep extension
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const safeName = `${Date.now()}-${session.userId}.${ext}`;
+    // Upload to Cloudinary via base64 data URI
+    const base64 = buffer.toString("base64");
+    const dataUri = `data:${file.type};base64,${base64}`;
 
-    const uploadDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(join(uploadDir, safeName), buffer);
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "buddyscript",
+      public_id: `${Date.now()}-${session.userId}`,
+      overwrite: false,
+    });
 
-    const imageUrl = `/uploads/${safeName}`;
-    return NextResponse.json({ success: true, data: { imageUrl } }, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: { imageUrl: result.secure_url } },
+      { status: 201 }
+    );
   } catch {
     return errorResponse("Upload failed", 500);
   }

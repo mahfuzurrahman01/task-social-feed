@@ -262,7 +262,7 @@ export default function RegisterPage() {
                           className="_social_registration_form_btn_link _btn1"
                           disabled={loading}
                         >
-                          {loading ? "Creating account..." : "Register now"}
+                          {loading ? "Creating account..." : "Register"}
                         </button>
                       </div>
                     </div>
